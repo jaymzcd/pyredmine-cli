@@ -20,7 +20,7 @@ def init(cfg='~/.redmine.cfg'):
     return key, url
 
 
-def rmcommand(rm, offset=0, limit=50, sort='id:desc', project=None, command='issues'):
+def rmcommand(rm, command='issues', offset=0, limit=50, sort='id:desc', project=None, filter=None):
 
     params = (('offset', offset), ('limit', limit), ('sort', sort),)
     if project:
@@ -45,7 +45,8 @@ def rmcommand(rm, offset=0, limit=50, sort='id:desc', project=None, command='iss
         if subject == None:
             subject = 'N/A'
 
-        issue_data.append((issue_id, project, subject.replace('\n', '')))
+        if filter is None or (filter in subject.lower() or filter in project.lower()):
+            issue_data.append((issue_id, project, subject.replace('\n', '')))
 
     return (True, issue_data)
 
@@ -57,12 +58,13 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--sorting', help='Column for sorting, can be suffixed with :desc to reverse order. Issues only!', type=str)
     parser.add_argument('-o', '--offset', help='Offset for issues starting from most recent descending')
     parser.add_argument('-p', '--project-id', help='Query against this particular project')
+    parser.add_argument('-f', '--filter', help='Filter any results against this - saves you grepping')
 
     args = parser.parse_args()
     key, url = init()
     rm = Redmine(url, key=key)
 
-    response, data = rmcommand(rm, command=args.command, offset=args.offset, limit=args.num, sort=args.sorting, project=args.project_id)
+    response, data = rmcommand(rm, command=args.command, offset=args.offset, limit=args.num, sort=args.sorting, project=args.project_id, filter=args.filter)
     _link = lambda x: '%s/%ss/%s' % (url, args.command, x)
 
     if response:
