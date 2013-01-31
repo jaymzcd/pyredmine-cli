@@ -73,7 +73,7 @@ Get issues with 'ssl' in the subject for project id 122:
 
 This makes use of the following key libraries, some standard some external:
 
-* [pyredminews](github.com/ianepperson/pyredminews) - using a fork here on GH
+* [pyredminews](http://github.com/ianepperson/pyredminews) - using a fork here on GH
 * [argparse](http://docs.python.org/2.7/library/argparse.html) standard lib in 2.7
 * [ConfigParser](http://docs.python.org/2/library/configparser.html) standard lib in 2
 
