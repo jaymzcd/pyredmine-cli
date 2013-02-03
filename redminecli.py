@@ -30,6 +30,7 @@ class ArgParser(object):
         parser.add_argument('-A', '--alias', help='Add an alias for an id')
         parser.add_argument('-i', '--object', help='Look up a particular item id', type=int)
         parser.add_argument('-m', '--assigned-to-me', help='Filter to show assigned to me only', action='store_true')
+        parser.add_argument('--show-aliases', help='List current aliases in user config', action='store_true')
 
         self.parser = parser
 
@@ -105,6 +106,10 @@ class RedmineCLI(object):
         cfg.readfp(f)
 
         return cfg
+
+    def show_aliases(self):
+        for alias in self.aliases.items():
+            print alias[0].ljust(15), alias[1]
 
     def add_alias(self, alias, value):
         cfg = self.get_config()
@@ -201,6 +206,10 @@ if __name__ == '__main__':
         k, v = args.alias.split('=')
         cli.add_alias(k, v)
         print "Saved alias %s" % args.alias
+        sys.exit(0)
+
+    if args.show_aliases:
+        cli.show_aliases()
         sys.exit(0)
 
     if args.object:
