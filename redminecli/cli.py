@@ -5,9 +5,10 @@ import sys
 import argparse
 import urllib2
 import pickle
+from textwrap import wrap
 from redmine import Redmine
 from ConfigParser import ConfigParser
-from prettyansi.prettyansi import AnsiPrettyPrint, AnsiColors
+from prettyansi.prettyansi import AnsiColors
 
 
 BASE = '~/.redmine/%s'
@@ -30,6 +31,7 @@ class ArgParser(object):
         parser.add_argument('-A', '--alias', help='Add an alias for an id')
         parser.add_argument('-i', '--object', help='Look up a particular item id', type=int)
         parser.add_argument('-m', '--assigned-to-me', help='Filter to show assigned to me only', action='store_true')
+        parser.add_argument('--statuses', help='Show a list of issue statuses', action='store_true')
         parser.add_argument('--show-aliases', help='List current aliases in user config', action='store_true')
 
         self.parser = parser
@@ -71,21 +73,7 @@ class RedmineData(object):
 
     def show(self, descriptions=False):
 
-        def _header():
-            AnsiColors.activate_color('blue')
-            print "ID".ljust(8),
-            AnsiColors.activate_color('red')
-            print "Project".ljust(33),
-            AnsiColors.activate_color('yellow')
-            print "Subject".encode('utf-8').ljust(38),
-            AnsiColors.activate_color('green')
-            print "Link"
-            print "-" * 120
-        _header()
-
         for issue in self.data:
-            if descriptions:
-                print "-" * 120
 
             AnsiColors.activate_color('blue')
             print issue[0].ljust(8),
@@ -95,9 +83,25 @@ class RedmineData(object):
             print issue[2][:35].encode('utf-8').ljust(38),
             AnsiColors.activate_color('green')
             print self.link(issue[0])
+
             if descriptions:
-                print "-" * 120
+                AnsiColors.reset()
                 print "\n\n%s\n\n" % issue[3].encode('utf-8')
+
+            if len(issue) == 5:
+                # We have journal data
+                for cnt, log in enumerate(issue[4]):
+                    if cnt % 2 == 0:
+                        AnsiColors.activate_color('green')
+                    else:
+                        AnsiColors.activate_color('red')
+
+                    if log[2] is not None:
+                        print "\nComment by %s at %s: \n" % (log[0], log[1])
+                        AnsiColors.reset()
+                        print '\n'.join(wrap(log[2], 70))
+                        AnsiColors.activate_color('yellow')
+                        print "_" * 80, "\n"
 
 
 class RedmineCLI(object):
@@ -161,9 +165,41 @@ class RedmineCLI(object):
         with open(self._cfgpath, 'wb') as _f:
             cfg.write(_f)
 
-    def command(self, command='issues', force=False, offset=0, limit=50, sort='id:desc', project=None, filter=None, object_id=None, me_only=False):
+    def get_projects(self, **kwargs):
+        url = 'projects.xml'
+        return self._command(command='project', command_url=url, element='project', **kwargs)
+
+    def get_issues(self, project=None, **kwargs):
+        url = 'issues.xml'
+        return self._command(command='issues', project=project, command_url=url, element='issue', **kwargs)
+
+    def get_object(self, object_id, object_type='issue', **kwargs):
+        url = '%ss/%d.xml' % (object_type, object_id)
+        if object_type == 'issue':
+            kwargs.update({'includes': 'journals'})
+        return self._command(command='issues', command_url=url, object_id=object_id, element='.', **kwargs)
+
+    def get_statuses(self, **kwargs):
+        url = 'issue_statuses.xml'
+        return self._command(command='issue_statuses', command_url=url, element='issue_status', **kwargs)
+
+    def _command(self, command='issues', command_url='issues.xml', **kwargs):
+
+        force = kwargs.get('force', False)
+        limit = kwargs.get('limit', 100)
+        offset = kwargs.get('offset', 0)
+        sort = kwargs.get('sort', 'id:desc')
+        filter = kwargs.get('filter', None)
+        project = kwargs.get('project', None)
+        object_id = kwargs.get('object_id', None)
+        me_only = kwargs.get('me_only', False)
+        element_filter = kwargs.get('element', command)
+        includes = kwargs.get('includes', None)
 
         params = []
+
+        if includes is not None:
+            params += (('include', includes),)
 
         if offset is not None:
             params += (('offset', offset),)
@@ -193,16 +229,8 @@ class RedmineCLI(object):
 
         rm = Redmine(self.url, key=self.key)
 
-        command_url = '%ss' % command
-        if object_id:
-            command_url += '/%d.xml' % object_id
-            element = '.'
-        else:
-            command_url += '.xml'
-            element = command
-
         try:
-            issues = rm.open(command_url, parms=params).findall(element)
+            issues = rm.open(command_url, parms=params).findall(element_filter)
         except urllib2.HTTPError:
             return (False, 'There was an HTTP error - do you have permission to access?')
 
@@ -210,10 +238,13 @@ class RedmineCLI(object):
 
         for issue in issues:
             issue_id = issue.find('id').text
+
             if command == 'project':
-                project = issue.find('identifier').text
+                name = issue.find('identifier').text
+            elif command == 'issue_statuses':
+                name = issue.find('name').text
             else:
-                project = issue.find('project').get('name')
+                name = issue.find('project').get('name')
 
             try:
                 description = issue.find('description').text
@@ -225,8 +256,18 @@ class RedmineCLI(object):
             except AttributeError:
                 subject = 'N/A'
 
-            if filter is None or (filter in subject.lower() or filter in project.lower()):
-                issue_data.append((issue_id, project, subject.replace('\n', ''), description))
+            history = list()
+            if command == 'issues' and object_id:
+                journals = issue.find('journals').findall('journal')
+                for j in journals:
+                    history.append([
+                        j.find('user').get('name'),
+                        j.find('created_on').text,
+                        j.find('notes').text,
+                    ])
+
+            if filter is None or (filter in subject.lower() or filter in name.lower()):
+                issue_data.append((issue_id, name, subject.replace('\n', ''), description, history))
 
         data.cache(issue_data)
         return (True, data)

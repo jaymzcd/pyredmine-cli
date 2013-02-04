@@ -11,8 +11,6 @@ if __name__ == '__main__':
     cli = RedmineCLI()
     args = ArgParser().get()
 
-    latest = args.latest
-
     command = args.type
     refresh = args.refresh
     descriptions = args.show_descriptions
@@ -34,21 +32,28 @@ if __name__ == '__main__':
         cli.show_aliases()
         sys.exit(0)
 
+    kwargs = dict(
+        force=refresh,
+        sort=sorting,
+        limit=limit,
+        me_only=me_only,
+        descriptions=descriptions
+    )
+
     if args.object:
-        command = 'issue'
-        descriptions = True
+        response, data = cli.get_object(object_type='issue', object_id=args.object, **kwargs)
 
     if args.project_id:
-        command = 'issue'
+        response, data = cli.get_issues(project=args.project_id, **kwargs)
 
-    if latest:
-        command = 'issue'
-        refresh = True
-        sorting = 'created_on:desc'
-        offset = 0
-        me_only = True
+    if args.latest:
+        response, data = cli.get_issues(force=True, sorting='created_on:desc', me_only=True)
 
-    response, data = cli.command(command=command, force=refresh, offset=offset, limit=limit, sort=sorting, project=args.project_id, filter=args.filter, object_id=args.object, me_only=me_only)
+    if args.statuses:
+        response, data = cli.get_statuses(**kwargs)
+
+    if command == 'project':
+        response, data = cli.get_projects(**kwargs)
 
     if response:
         data.show(descriptions=descriptions)
