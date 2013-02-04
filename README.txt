@@ -1,13 +1,16 @@
-# Redmine Python CLI
+==================
+Redmine Python CLI
+==================
 
-![logo](http://i.imgur.com/8KO0oHF.png)
+.. image:: http://i.imgur.com/8KO0oHF.png
 
 Actually there's a much more [featureful ruby version](https://github.com/diasjorge/redmine-cli),
 but I just wanted something quick and easy in Python using an existing library, in this
 case pyredminews - to get back an issue list - I often forget what the most recent
 issue ID was that I wanted to log tickets against.
 
-## Setup
+Setup
+=====
 
 Add a file to `~/.redmine.cfg` with your API key and URL thus:
 
@@ -23,7 +26,9 @@ a URL to click if you're using a fancy terminal.
 Not exactly groundbreaking but saves me swapping over to chrome to go hunting
 for id's.
 
-## Usage
+Usage
+=====
+
 Command line interface to Redmine using it's XML REST API
 
     usage: redmine [-h] [-n NUM] [-s SORTING] [-o OFFSET] [-p PROJECT_ID]
@@ -48,7 +53,7 @@ Command line interface to Redmine using it's XML REST API
       -f FILTER, --filter FILTER
                             Filter any results against this - saves you grepping
 
-![usage](http://i.imgur.com/NGb3Uh9.png)
+.. image:: http://i.imgur.com/NGb3Uh9.png
 
 To get a list of the first n projects - note in a somewhat hacky manner use a high
 enough number to return all results - this will probably do unless you have some
@@ -69,15 +74,17 @@ Get issues with 'ssl' in the subject for project id 122:
 
     redmine -n100 -p122 -fssl issue
 
-## Used libraries
+Used libraries
+--------------
 
 This makes use of the following key libraries, some standard some external:
 
-* [pyredminews](http://github.com/ianepperson/pyredminews) - using a fork here on GH
-* [argparse](http://docs.python.org/2.7/library/argparse.html) standard lib in 2.7
-* [ConfigParser](http://docs.python.org/2/library/configparser.html) standard lib in 2
+* pyredminews: http://github.com/ianepperson/pyredminews - using a fork here on GH
+* argparse: http://docs.python.org/2.7/library/argparse.html standard lib in 2.7
+* ConfigParser: http://docs.python.org/2/library/configparser.html standard lib in 2
 
-## Moar code
+Moar code
+---------
 
 You can find some more on me at [jaymz.eu](http://jaymz.eu). Follow [@jaymzcampbell](http://twitter.com/jaymzcampbell)
 for acerbic tweets. I work at [u-dox](http://u-dox.com) and we're [on github](http://github.com/udox) too!

@@ -1,11 +1,10 @@
 #!/usr/bin/env python2
 
-import argparse
 import os
-import pickle
 import sys
+import argparse
 import urllib2
-
+import pickle
 from redmine import Redmine
 from ConfigParser import ConfigParser
 
