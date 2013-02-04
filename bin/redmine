@@ -1,0 +1,49 @@
+#!/usr/bin/env python2
+
+import sys
+from redminecli.cli import ArgParser, RedmineCLI
+
+
+if __name__ == '__main__':
+
+    cli = RedmineCLI()
+    args = ArgParser().get()
+
+    latest = args.latest
+
+    command = args.type
+    refresh = args.refresh
+    descriptions = args.show_descriptions
+    sorting = args.sorting
+    limit = args.num
+    offset = args.offset
+    me_only = args.assigned_to_me
+
+    if args.alias is not None:
+        k, v = args.alias.split('=')
+        cli.add_alias(k, v)
+        print "Saved alias %s" % args.alias
+        sys.exit(0)
+
+    if args.show_aliases:
+        cli.show_aliases()
+        sys.exit(0)
+
+    if args.object:
+        command = 'issue'
+        descriptions = True
+
+    if args.project_id:
+        command = 'issue'
+
+    if latest:
+        command = 'issue'
+        refresh = True
+        sorting = 'created_on:desc'
+        offset = 0
+        me_only = True
+
+    response, data = cli.command(command=command, force=refresh, offset=offset, limit=limit, sort=sorting, project=args.project_id, filter=args.filter, object_id=args.object, me_only=me_only)
+
+    if response:
+        data.show(descriptions=descriptions)
