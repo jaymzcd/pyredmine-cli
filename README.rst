@@ -70,7 +70,7 @@ Command line interface to Redmine using it's XML REST API::
 
 To get a list of the first n projects - note in a somewhat hacky manner use a high
 enough number to return all results - this will probably do unless you have some
-serious overusage of Redmine:
+serious overusage of Redmine::
 
     redmine -n1000 -tproject
 
