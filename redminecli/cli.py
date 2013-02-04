@@ -50,7 +50,7 @@ class RedmineData(object):
 
     def link(self, x):
         if self.url:
-            return '%s/%ss/%s' % (self.url, self.command, x)
+            return '%s/%s/%s' % (self.url, self.command, x)
         else:
             return '/%ss/%s' % (self.command, x)
 
@@ -167,7 +167,7 @@ class RedmineCLI(object):
 
     def get_projects(self, **kwargs):
         url = 'projects.xml'
-        return self._command(command='project', command_url=url, element='project', **kwargs)
+        return self._command(command='projects', command_url=url, element='project', **kwargs)
 
     def get_issues(self, project=None, **kwargs):
         url = 'issues.xml'
@@ -239,7 +239,7 @@ class RedmineCLI(object):
         for issue in issues:
             issue_id = issue.find('id').text
 
-            if command == 'project':
+            if command == 'projects':
                 name = issue.find('identifier').text
             elif command == 'issue_statuses':
                 name = issue.find('name').text
