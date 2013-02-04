@@ -1,6 +1,8 @@
 #!/usr/bin/env python2
 
 import sys
+sys.path.append('/home/jaymz/development/python/pyredminecli/')
+
 from redminecli.cli import ArgParser, RedmineCLI
 
 
@@ -18,6 +20,9 @@ if __name__ == '__main__':
     limit = args.num
     offset = args.offset
     me_only = args.assigned_to_me
+
+    if limit is None:
+        limit = 100
 
     if args.alias is not None:
         k, v = args.alias.split('=')

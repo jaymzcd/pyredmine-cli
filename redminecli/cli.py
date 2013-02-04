@@ -7,6 +7,7 @@ import urllib2
 import pickle
 from redmine import Redmine
 from ConfigParser import ConfigParser
+from prettyansi.prettyansi import AnsiPrettyPrint, AnsiColors
 
 
 BASE = '~/.redmine/%s'
@@ -69,10 +70,31 @@ class RedmineData(object):
             return False
 
     def show(self, descriptions=False):
+
+        def _header():
+            AnsiColors.activate_color('blue')
+            print "ID".ljust(8),
+            AnsiColors.activate_color('red')
+            print "Project".ljust(33),
+            AnsiColors.activate_color('yellow')
+            print "Subject".encode('utf-8').ljust(38),
+            AnsiColors.activate_color('green')
+            print "Link"
+            print "-" * 120
+        _header()
+
         for issue in self.data:
             if descriptions:
                 print "-" * 120
-            print issue[0].ljust(8), issue[1][:30].ljust(33), issue[2][:35].encode('utf-8').ljust(38), self.link(issue[0])
+
+            AnsiColors.activate_color('blue')
+            print issue[0].ljust(8),
+            AnsiColors.activate_color('red')
+            print issue[1][:30].ljust(33),
+            AnsiColors.activate_color('yellow')
+            print issue[2][:35].encode('utf-8').ljust(38),
+            AnsiColors.activate_color('green')
+            print self.link(issue[0])
             if descriptions:
                 print "-" * 120
                 print "\n\n%s\n\n" % issue[3].encode('utf-8')
