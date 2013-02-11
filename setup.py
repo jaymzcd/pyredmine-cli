@@ -10,7 +10,7 @@ setup(
     url='http://github.com/jaymzcd/pyredminecli',
     license='LICENSE.txt',
     description='Command line interface with cacheing to Redmine project management system.',
-    long_description=open('README.txt').read(),
+    long_description=open('README.rst').read(),
     install_requires=[
         "pyredminews",
     ],
