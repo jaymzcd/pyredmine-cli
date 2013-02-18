@@ -5,6 +5,7 @@ import sys
 import argparse
 import urllib2
 import pickle
+import xml.etree.ElementTree as ET
 from textwrap import wrap
 from redmine import Redmine
 from ConfigParser import ConfigParser
@@ -230,7 +231,10 @@ class RedmineCLI(object):
         rm = Redmine(self.url, key=self.key)
 
         try:
-            issues = rm.open(command_url, parms=params).findall(element_filter)
+            # As of Feb 2013 the pyredmine library has finally had a bunch of updates
+            # - including cacheing! The response from RedMine.open is now a string rather
+            # than a raw ElementTree instance so must convert now.
+            issues = ET.fromstring(rm.open(command_url, parms=params)).findall(element_filter)
         except urllib2.HTTPError:
             return (False, 'There was an HTTP error - do you have permission to access?')
 
